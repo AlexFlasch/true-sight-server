@@ -15,10 +15,13 @@ namespace true_sight_server
 			config.MapHttpAttributeRoutes();
 
 			config.Routes.MapHttpRoute(
-				name: "DefaultApi",
+				name: "SteamApi",
 				routeTemplate: "api/{controller}/{id}",
 				defaults: new { id = RouteParameter.Optional }
 			);
+
+		    config.Formatters.Remove(config.Formatters.XmlFormatter);
+            config.Formatters.Add(config.Formatters.JsonFormatter);
 		}
 	}
 }
