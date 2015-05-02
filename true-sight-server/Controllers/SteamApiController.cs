@@ -15,10 +15,10 @@ namespace true_sight_server.Controllers
 	public class SteamApiController : ApiController
 	{
 	    readonly string apiKey = ConfigurationManager.AppSettings["SteamApiKey"];
-
-        public string ResolveVanityUrl(string vanityUrl)
+        //GET api/<controller>
+        public JObject GetVanityUrl()
 	    {
-            Uri uri = new Uri(@"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=" + apiKey + "&vanityurl=http://steamcommunity.com/id/Flascher");
+            Uri uri = new Uri(@"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=" + apiKey + "&vanityurl=gabelogannewell");
 
             WebRequest request = WebRequest.Create(uri);
             request.Method = "GET";
@@ -26,7 +26,8 @@ namespace true_sight_server.Controllers
             StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.UTF8);
             var responseContent = reader.ReadToEnd();
             reader.Close();
-            return responseContent;
+            JObject obj = JsonConvert.DeserializeObject<JObject>(responseContent);
+            return obj;
 	    }
 	}
 }
