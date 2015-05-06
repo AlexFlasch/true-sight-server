@@ -5,9 +5,9 @@ using System.Web;
 
 namespace true_sight_server.Models
 {
-    public class Hero
-    {
-        public int MatchID { get; set; }
-        public string Name { get; set; }
-    }
+	public class Item
+	{
+		public int itemId { get; set; }
+
+	}
 }
