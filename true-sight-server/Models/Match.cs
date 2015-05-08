@@ -8,6 +8,6 @@ namespace true_sight_server.Models
     public class Match
     {
         public bool Victory { get; set; }
-        public List<Player> Heroes { get; set; }
+        //public List<Player> Heroes { get; set; }
     }
 }

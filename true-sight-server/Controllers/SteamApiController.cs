@@ -20,7 +20,7 @@ namespace true_sight_server.Controllers
 {
 	public class SteamApiController : ApiController
 	{
-		private const int saltValSize = 16;
+		private const int HASH_SIZE = 16;
 		private string connectionString =
 			"Server=tcp:xyymsldado.database.windows.net,1433;Database=true-sight;User ID=true-sight@xyymsldado;Password=Sh0cking;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 
@@ -29,38 +29,22 @@ namespace true_sight_server.Controllers
 			SteamWebAPI.SetGlobalKey(ConfigurationManager.AppSettings["SteamApiKey"]);
 		}
 
-        public ResponseBase GetSteamIdFromVanityUrl(string username, string vanityUrl)
+        [System.Web.Http.ActionName("GetSteamIdAction")]
+        public ResponseBase GetSteamIdFromVanityUrl(string email, string vanityUrl, bool saveVanityUrl)
 	    {
-            /*Uri uri = new Uri(@"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=" + apiKey + "&vanityurl=" + vanityUrl);
-
-            WebRequest request = WebRequest.Create(uri);
-            request.Method = "GET";
-            WebResponse response = request.GetResponse();
-            
-            StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.UTF8);
-            var responseContent = reader.ReadToEnd();
-            reader.Close();
-            
-            JObject obj = JsonConvert.DeserializeObject<JObject>(responseContent);
-            if (obj["success"].ToString() == "1")
-            {
-                SaveSteamIdForUser(username, obj["steamid"].ToString());
-                return obj;
-            }
-            
-            return obj;*/
-
 			var steamId = SteamWebAPI.General().ISteamUser().ResolveVanityURL(vanityUrl).GetResponse();
 
-	        using (SqlConnection connection = new SqlConnection(connectionString))
-	        {
-		        
-	        }
+            if (saveVanityUrl)
+            {
+                SaveSteamIdForUser(email, steamId.ToString());
+            }
 
 	        return steamId;
 	    }
+        
+        [System.Web.Http.ActionName("RegisterUserAction")]
 
-	    public void SaveSteamIdForUser(string username, string steamId)
+	    public void SaveSteamIdForUser(string email, string steamId)
 	    {
 		    using (SqlConnection connection = new SqlConnection(connectionString))
 		    {
@@ -91,42 +75,11 @@ namespace true_sight_server.Controllers
 			return null;
 		}
 
-		private static string HashPassword(string clearData, string saltValue, HashAlgorithm hash)
+		private static string HashPassword(string email, string password)
 		{
-			UnicodeEncoding encoding = new UnicodeEncoding();
-
-			if (clearData != null && hash != null && encoding != null)
-			{
-				if (saltValue == null)
-				{
-					saltValue = GenerateSaltValue();
-				}
-
-				byte[] binarySaltValue = new byte[saltValSize];
-
-				for (int i = 0; i <= saltValSize; i++)
-				{
-					binarySaltValue[i] = byte.Parse(saltValue.Substring(i*2, 2), System.Globalization.NumberStyles.HexNumber,
-						CultureInfo.InvariantCulture.NumberFormat);
-				}
-
-				byte[] valueToHash = new byte[saltValSize + encoding.GetByteCount(clearData)];
-				byte[] binaryPassword = encoding.GetBytes(clearData);
-
-				binarySaltValue.CopyTo(valueToHash, 0);
-				binaryPassword.CopyTo(valueToHash, saltValSize);
-
-				byte[] hashValue = hash.ComputeHash(valueToHash);
-
-				string hashedPassword = saltValue;
-
-				foreach (byte hexdigit in hashValue)
-				{
-					hashedPassword += hexdigit.ToString("X2", CultureInfo.InvariantCulture.NumberFormat);
-				}
-
-				return hashedPassword;
-			}
+            HashAlgorithm hash = new SHA256CryptoServiceProvider();
+            byte[] byteValue = System.Text.Encoding.UTF8.GetBytes(email += password);
+            byte[] byteHash = hash.ComputeHash(byteValue);
 		}
 	}
 }
