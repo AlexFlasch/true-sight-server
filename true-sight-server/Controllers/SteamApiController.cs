@@ -43,12 +43,39 @@ namespace true_sight_server.Controllers
 	    }
         
         [System.Web.Http.ActionName("RegisterUserAction")]
+		public void RegisterUser(string email, string password)
+		{
+			string hashedPassword = HashPassword(email, password);
+			
+			using (SqlConnection conn = new SqlConnection(connectionString))
+			using (SqlCommand command = new SqlCommand("dbo.InsertUser", conn)
+			{
+				CommandType = CommandType.Procedure	
+			})
+			{
+				conn.Open();
+				command.Add(new SqlParameter("@email", email));
+				command.Add(new SqlParameter("@password", hashedPassword));
+				conn.ExecuteNonQuery(command);
+				conn.close();
+			}
+		}
+		
+		
 
 	    public void SaveSteamIdForUser(string email, string steamId)
 	    {
 		    using (SqlConnection connection = new SqlConnection(connectionString))
+			using (SqlCommand commmand = new SqlCommand("dbo.InsertSteamId", conn)
+			{
+				CommandType = CommandType.Procedure
+			})
 		    {
-			    
+			    conn.Open();
+				command.Add(new SqlParameter("@email", email));
+				command.Add(new SqlParameter("@steamId", steamId));
+				conn.ExecuteNonQuery(command);
+				conn.Close();
 		    }
 	    }
 
@@ -80,6 +107,7 @@ namespace true_sight_server.Controllers
             HashAlgorithm hash = new SHA256CryptoServiceProvider();
             byte[] byteValue = System.Text.Encoding.UTF8.GetBytes(email += password);
             byte[] byteHash = hash.ComputeHash(byteValue);
+			return Convert.ToBase64String(byteHash);
 		}
 	}
 }
