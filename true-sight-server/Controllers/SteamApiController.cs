@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using System.Web.Http;
-using System.Web.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PortableSteam;
@@ -23,14 +22,16 @@ namespace true_sight_server.Controllers
 	{
 		private const int HashSize = 16;
 		private const string ConnectionString = "Server=tcp:xyymsldado.database.windows.net,1433;Database=true-sight-db;User ID=true-sight@xyymsldado;Password=Sh0cking;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+		private const long SteamIdConversion = 76561197960265728;
 
 		public SteamApiController()
 		{
 			SteamWebAPI.SetGlobalKey(ConfigurationManager.AppSettings["SteamApiKey"]);
 		}
 
-        [System.Web.Http.ActionName("GetSteamIdAction")]
-		[System.Web.Http.AcceptVerbs("GET", "POST")]
+		#region SteamWebAPI
+		[ActionName("GetSteamIdAction")]
+		[AcceptVerbs("GET", "POST")]
         public ResponseBase GetSteamIdFromVanityUrl(string email, string vanityUrl, bool saveVanityUrl)
 	    {
 			var steamId = SteamWebAPI.General().ISteamUser().ResolveVanityURL(vanityUrl).GetResponse();
@@ -45,8 +46,33 @@ namespace true_sight_server.Controllers
 	        return steamId;
 	    }
 
-		[System.Web.Http.ActionName("LoginUserAction")]
-		[System.Web.Http.AcceptVerbs("GET", "POST")]
+		[ActionName("GetMatchHistoryAction")]
+		[AcceptVerbs("GET", "POST")]
+		public ResponseBase GetMatchHistoryFromSteamId(string steamId)
+		{
+			var accountId = Convert.ToInt64(steamId) - SteamIdConversion;
+			var accountIdentity = SteamIdentity.FromAccountID(accountId);
+
+			var matchHistory = SteamWebAPI.Game().Dota2().IDOTA2Match().GetMatchHistory().Account(accountIdentity).GetResponse();
+
+			return matchHistory;
+		}
+
+		[ActionName("GetMatchDetailsAction")]
+		[AcceptVerbs("GET", "POST")]
+		public ResponseBase GetMatchDetailsFromMatchId(string matchId)
+		{
+			var matchIdLong = Convert.ToInt64(matchId);
+
+			var matchDetails = SteamWebAPI.Game().Dota2().IDOTA2Match().GetMatchDetails(matchIdLong).GetResponse();
+
+			return matchDetails;
+		}
+		#endregion
+
+		#region UserMethods
+		[ActionName("LoginUserAction")]
+		[AcceptVerbs("GET", "POST")]
 		public JObject LoginUser(string email, string password)
 		{
 			var hashedPassword = HashPassword(email, password);
@@ -74,8 +100,8 @@ namespace true_sight_server.Controllers
 			}
 		}
         
-        [System.Web.Http.ActionName("RegisterUserAction")]
-		[System.Web.Http.AcceptVerbs("GET","POST")]
+        [ActionName("RegisterUserAction")]
+		[AcceptVerbs("GET","POST")]
 		public JObject RegisterUser(string email, string password)
 		{
 			var hashedPassword = HashPassword(email, password);
@@ -134,7 +160,9 @@ namespace true_sight_server.Controllers
 				conn.Close();
 		    }
 	    }
+		#endregion
 
+		#region UtilMethods
 		//not going to worry about salting passwords right now... Fuck security.
 		private static string GenerateSaltValue()
 		{
@@ -166,5 +194,6 @@ namespace true_sight_server.Controllers
             byte[] byteHash = hash.ComputeHash(byteValue);
 			return Convert.ToBase64String(byteHash);
 		}
+		#endregion
 	}
 }

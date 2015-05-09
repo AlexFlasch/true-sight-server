@@ -35,7 +35,19 @@ namespace true_sight_server
 			config.Routes.MapHttpRoute(
 				name: "LoginUser",
 				routeTemplate: "api/{controller}/Login/{email}/{password}",
-				defaults: new {action = "LoginUserAction"}
+				defaults: new { action = "LoginUserAction" }
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetMatchHistory",
+				routeTemplate: "api/{controller}/GetMatchHistory/{steamId}",
+				defaults: new { action = "GetMatchHistoryAction" }
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetMatchDetails",
+				routeTemplate: "api/{controller}/GetMatchDetails/{matchId}",
+				defaults: new {action = "GetMatchDetailsAction"}
 			);
 
 		    config.Formatters.Remove(config.Formatters.XmlFormatter);
