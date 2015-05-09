@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
@@ -20,9 +21,8 @@ namespace true_sight_server.Controllers
 {
 	public class SteamApiController : ApiController
 	{
-		private const int HASH_SIZE = 16;
-		private string connectionString =
-			"Server=tcp:xyymsldado.database.windows.net,1433;Database=true-sight;User ID=true-sight@xyymsldado;Password=Sh0cking;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+		private const int HashSize = 16;
+		private const string ConnectionString = "Server=tcp:xyymsldado.database.windows.net,1433;Database=true-sight-db;User ID=true-sight@xyymsldado;Password=Sh0cking;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 
 		public SteamApiController()
 		{
@@ -30,55 +30,112 @@ namespace true_sight_server.Controllers
 		}
 
         [System.Web.Http.ActionName("GetSteamIdAction")]
+		[System.Web.Http.AcceptVerbs("GET", "POST")]
         public ResponseBase GetSteamIdFromVanityUrl(string email, string vanityUrl, bool saveVanityUrl)
 	    {
 			var steamId = SteamWebAPI.General().ISteamUser().ResolveVanityURL(vanityUrl).GetResponse();
 
             if (saveVanityUrl)
             {
-                SaveSteamIdForUser(email, steamId.ToString());
+	            long steamIdLong = steamId.Data.Identity.SteamID;
+	            string steamIdString = steamIdLong.ToString();
+                SaveSteamIdForUser(email, steamIdString);
             }
 
 	        return steamId;
 	    }
-        
-        [System.Web.Http.ActionName("RegisterUserAction")]
-		public void RegisterUser(string email, string password)
+
+		[System.Web.Http.ActionName("LoginUserAction")]
+		[System.Web.Http.AcceptVerbs("GET", "POST")]
+		public JObject LoginUser(string email, string password)
 		{
-			string hashedPassword = HashPassword(email, password);
-			
-			using (SqlConnection conn = new SqlConnection(connectionString))
-			using (SqlCommand command = new SqlCommand("dbo.InsertUser", conn)
+			var hashedPassword = HashPassword(email, password);
+
+			using (var conn = new SqlConnection(ConnectionString))
+			using (var command = new SqlCommand("dbo.Login", conn)
 			{
-				CommandType = CommandType.Procedure	
+				CommandType = CommandType.StoredProcedure
 			})
 			{
 				conn.Open();
-				command.Add(new SqlParameter("@email", email));
-				command.Add(new SqlParameter("@password", hashedPassword));
-				conn.ExecuteNonQuery(command);
-				conn.close();
+				command.Parameters.Add(new SqlParameter("@email", email));
+				command.Parameters.Add(new SqlParameter("@password", hashedPassword));
+				bool success = false;
+				using (var reader = command.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						success = (bool) reader["SuccessfulLogin"];
+					}
+				}
+				conn.Close();
+
+				return new JObject {{"success", success}};
 			}
 		}
-		
-		
+        
+        [System.Web.Http.ActionName("RegisterUserAction")]
+		[System.Web.Http.AcceptVerbs("GET","POST")]
+		public JObject RegisterUser(string email, string password)
+		{
+			var hashedPassword = HashPassword(email, password);
+
+	        if (UserExists(email)) return new JObject {{"success", false}, {"message", "This email is already being used."}};
+	        using (var conn = new SqlConnection(ConnectionString))
+	        using (var command = new SqlCommand("dbo.InsertUser", conn)
+	        {
+		        CommandType = CommandType.StoredProcedure
+	        })
+	        {
+		        conn.Open();
+		        command.Parameters.Add(new SqlParameter("@email", email));
+		        command.Parameters.Add(new SqlParameter("@password", hashedPassword));
+		        command.ExecuteNonQuery();
+		        conn.Close();
+	        }
+		        
+	        return new JObject {{"success", true}};
+		}
+
+		private bool UserExists(string email)
+		{
+			using (SqlConnection conn = new SqlConnection(ConnectionString))
+			using (SqlCommand command = new SqlCommand("dbo.UserExists", conn)
+			{
+				CommandType = CommandType.StoredProcedure
+			})
+			{
+				conn.Open();
+				command.Parameters.Add(new SqlParameter("@email", email));
+				bool userExists = false;
+				using (SqlDataReader reader = command.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						userExists = (bool) reader["UserExists"];
+					}
+				}
+				conn.Close();
+				return userExists;
+			}
+		}
 
 	    public void SaveSteamIdForUser(string email, string steamId)
 	    {
-		    using (SqlConnection connection = new SqlConnection(connectionString))
-			using (SqlCommand commmand = new SqlCommand("dbo.InsertSteamId", conn)
-			{
-				CommandType = CommandType.Procedure
+		    using (var conn = new SqlConnection(ConnectionString))
+			using (var command = new SqlCommand("dbo.UpdateSteamId", conn){
+				CommandType = CommandType.StoredProcedure
 			})
 		    {
 			    conn.Open();
-				command.Add(new SqlParameter("@email", email));
-				command.Add(new SqlParameter("@steamId", steamId));
-				conn.ExecuteNonQuery(command);
+				command.Parameters.Add(new SqlParameter("@email", email));
+				command.Parameters.Add(new SqlParameter("@steamId", steamId));
+				command.ExecuteNonQuery();
 				conn.Close();
 		    }
 	    }
 
+		//not going to worry about salting passwords right now... Fuck security.
 		private static string GenerateSaltValue()
 		{
 			UnicodeEncoding utf16 = new UnicodeEncoding();
@@ -89,7 +146,7 @@ namespace true_sight_server.Controllers
 
 				if (random != null)
 				{
-					byte[] saltValue = new byte[saltValSize];
+					byte[] saltValue = new byte[HashSize];
 
 					random.NextBytes(saltValue);
 
