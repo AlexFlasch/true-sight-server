@@ -6,6 +6,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using true_sight_server.App_Start;
 
 namespace true_sight_server
 {
@@ -18,6 +19,7 @@ namespace true_sight_server
 			FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
 			RouteConfig.RegisterRoutes(RouteTable.Routes);
 			BundleConfig.RegisterBundles(BundleTable.Bundles);
+			GlobalConfiguration.Configuration.MessageHandlers.Add(new CorsHandler());
 		}
 	}
 }
