@@ -170,6 +170,59 @@ namespace true_sight_server.Controllers
 		#endregion
 
 		#region UtilMethods
+
+		[ActionName("GetHeroListAction")]
+		[AcceptVerbs("GET")]
+		public JObject GetHeroList()
+		{
+			return ReadJsonFileToJObject("~/Content/heroes.json");
+		}
+
+		[ActionName("GetItemListAction")]
+		[AcceptVerbs("GET")]
+		public JObject GetItemList()
+		{
+			return ReadJsonFileToJObject("~/Content/items.json");
+		}
+
+		[ActionName("GetAbilityListAction")]
+		[AcceptVerbs("GET")]
+		public JObject GetAbilityList()
+		{
+			return ReadJsonFileToJObject("~/Content/abilities.json");
+		}
+
+		[ActionName("GetLobbyListAction")]
+		[AcceptVerbs("GET")]
+		public JObject GetLobbyList()
+		{
+			return ReadJsonFileToJObject("~/Content/lobbies.json");
+		}
+
+		[ActionName("GetModeListAction")]
+		[AcceptVerbs("GET")]
+		public JObject GetModeList()
+		{
+			return ReadJsonFileToJObject("~/Content/modes.json");
+		}
+
+		[ActionName("GetRegionListAction")]
+		[AcceptVerbs("GET")]
+		public JObject GetRegionList()
+		{
+			return ReadJsonFileToJObject("~/Content/regions.json");
+		}
+
+		private JObject ReadJsonFileToJObject(string filepath)
+		{
+			StreamReader re = new StreamReader(HttpContext.Current.Server.MapPath(filepath));
+			JsonTextReader reader = new JsonTextReader(re);
+			JsonSerializer s = new JsonSerializer();
+			object parsedData = s.Deserialize(reader);
+
+			return JObject.FromObject(parsedData);
+		}
+
 		//not going to worry about salting passwords right now... Fuck security.
 		private static string GenerateSaltValue()
 		{

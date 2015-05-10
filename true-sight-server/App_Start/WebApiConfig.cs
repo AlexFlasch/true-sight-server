@@ -50,7 +50,43 @@ namespace true_sight_server
 			config.Routes.MapHttpRoute(
 				name: "GetMatchDetails",
 				routeTemplate: "api/{controller}/GetMatchDetails/{matchId}",
-				defaults: new {action = "GetMatchDetailsAction"}
+				defaults: new { action = "GetMatchDetailsAction"}
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetHeroList",
+				routeTemplate: "api/{controller}/GetHeroList",
+				defaults: new { action = "GetHeroListAction" }
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetItemList",
+				routeTemplate: "api/{controller}/GetItemList",
+				defaults: new { action = "GetItemListAction" }
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetAbilitiesList",
+				routeTemplate: "api/{controller}/GetAbilityList",
+				defaults: new { action = "GetAbilityListAction" }
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetLobbyList",
+				routeTemplate: "api/{controller}/GetLobbyList",
+				defaults: new { action = "GetLobbyListAction" }
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetModeList",
+				routeTemplate: "api/{controller}/GetModeList",
+				defaults: new { action = "GetModeListAction"}
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "GetRegionList",
+				routeTemplate: "api/{controller}/GetRegionList",
+				defaults: new { action = "GetRegionListAction" }
 			);
 
 		    config.Formatters.Remove(config.Formatters.XmlFormatter);
