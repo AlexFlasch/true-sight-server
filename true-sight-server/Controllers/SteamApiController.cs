@@ -34,7 +34,7 @@ namespace true_sight_server.Controllers
 		#region SteamWebAPI
 		[ActionName("GetSteamIdAction")]
 		[AcceptVerbs("GET", "POST")]
-        public ResponseBase GetSteamIdFromVanityUrl(string email, string vanityUrl, bool saveVanityUrl)
+        public JObject GetSteamIdFromVanityUrl(string email, string vanityUrl, bool saveVanityUrl)
 	    {
 			var steamId = SteamWebAPI.General().ISteamUser().ResolveVanityURL(vanityUrl).GetResponse();
 
@@ -45,7 +45,7 @@ namespace true_sight_server.Controllers
                 SaveSteamIdForUser(email, steamIdString);
             }
 
-	        return steamId;
+	        return new JObject {{"success", steamId.Data.Success}, {"steamid", steamId.Data.Identity.SteamID.ToString()}};
 	    }
 
 		[ActionName("GetMatchHistoryAction")]
