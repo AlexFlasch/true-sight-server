@@ -45,7 +45,12 @@ namespace true_sight_server.Controllers
                 SaveSteamIdForUser(email, steamIdString);
             }
 
-	        return new JObject {{"success", steamId.Data.Success}, {"steamid", steamId.Data.Identity.SteamID.ToString()}};
+	        return new JObject
+	        {
+		        {"success", steamId.Data.Success},
+				{"steamid", steamId.Data.Identity.SteamID.ToString()},
+				{"accountid", steamId.Data.Identity.AccountID.ToString()}
+	        };
 	    }
 
 		[ActionName("GetMatchHistoryAction")]
