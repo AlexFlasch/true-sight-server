@@ -12,6 +12,9 @@ namespace true_sight_server
 		{
 			// Web API configuration and services
 
+			//enable CORS
+			config.EnableCors();
+
 			// Web API routes
 			config.MapHttpAttributeRoutes();
 
