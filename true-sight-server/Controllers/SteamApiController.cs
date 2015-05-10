@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PortableSteam;
@@ -18,6 +19,7 @@ using PortableSteam.Infrastructure;
 
 namespace true_sight_server.Controllers
 {
+	[EnableCors(origins: "*", headers: "*", methods: "*")]
 	public class SteamApiController : ApiController
 	{
 		private const int HashSize = 16;
