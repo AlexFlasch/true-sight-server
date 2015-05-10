@@ -121,11 +121,6 @@
             "localized_name": "Lina"
         },
         {
-            "name": "lich",
-            "id": 31,
-            "localized_name": "Lich"
-        },
-        {
             "name": "lion",
             "id": 26,
             "localized_name": "Lion"
@@ -145,10 +140,15 @@
             "id": 29,
             "localized_name": "Tidehunter"
         },
-        {
-            "name": "witch_doctor",
-            "id": 30,
-            "localized_name": "Witch Doctor"
+		{
+			"name": "witch_doctor",
+			"id": 30,
+			"localized_name": "Witch Doctor"
+		},
+		{
+            "name": "lich",
+            "id": 31,
+            "localized_name": "Lich"
         },
         {
             "name": "riki",
